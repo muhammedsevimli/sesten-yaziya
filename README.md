@@ -34,7 +34,14 @@ python sesyaz.py kayit.mp3
 python sesyaz.py kayitlar/
 ```
 
-Mikrofonla dikte (Enter: başlat/durdur):
+Her uygulamada dikte (Wispr Flow akışı): WhatsApp'ta, mailde, dokümanda, neredeysen orada kal.
+F8'e bas, konuş, tekrar F8; metin imlecin olduğu yere kendiliğinden yazılır:
+
+```bash
+python dikte.py
+```
+
+Terminalde kalmak istersen basit mikrofon modu da var (Enter: başlat/durdur, metin ekrana + panoya):
 
 ```bash
 python mikrofon.py
@@ -55,8 +62,9 @@ python mikrofon.py
 - Varsayılan model `small`: hızlı, çoğu kayıtta yeterli. Zor kayıtta kelime hatası yaparsa
   `--model medium` dene, belirgin daha isabetli (indirmesi daha büyük, çevirmesi daha yavaş).
 - Noktalama mükemmel değil; uzun metinlerde elden bir geçirmek gerekebilir.
-- Konuşmacı ayrımı yok, canlı sistem-geneli dikte entegrasyonu yok. Wispr Flow gibi araçların
-  parasını hak eden kısmı da zaten orası; bu repo işin çekirdeğini bedavaya getiriyor.
+- Dikte modu konuşurken değil, kaydı durdurunca yazar (çeviri kısa bir an sürer). Anlık akış,
+  tepsi simgesi, cilalı arayüz yok; paralı araçların parası o cilaya gidiyor, iş burada.
+- Konuşmacı ayrımı yok. `dikte.py` Linux'ta yönetici izni ister (keyboard kütüphanesi), Windows'ta gerekmez.
 - Beğenmediysen ya da kendine göre kurmak istersen bu sistemin prompt'u da açık:
   [muhammedsevimli.com/saas-promptlari/wispr-flow](https://muhammedsevimli.com/saas-promptlari/wispr-flow)
 

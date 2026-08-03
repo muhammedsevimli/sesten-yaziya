@@ -34,7 +34,14 @@ python sesyaz.py recording.mp3
 python sesyaz.py recordings/
 ```
 
-Microphone dictation (Enter to start/stop):
+Dictation in any app (the Wispr Flow-style flow): stay wherever you are — chat, email, docs.
+Press F8, speak, press F8 again; the text is typed right where your cursor is:
+
+```bash
+python dikte.py
+```
+
+Prefer staying in the terminal? Simple mic mode (Enter to start/stop, text to screen + clipboard):
 
 ```bash
 python mikrofon.py
@@ -55,8 +62,9 @@ Written to `cikti/`:
 - Default model is `small`: fast, good enough for most recordings. If it stumbles, try
   `--model medium` (bigger download, slower, noticeably more accurate).
 - Punctuation is decent, not perfect.
-- No speaker diarization, no system-wide live dictation integration. That polish is what the
-  paid tools actually charge for; this repo gives you the core for free.
+- Dictation types after you stop recording (transcription takes a moment), not while you speak.
+  No streaming, no tray icon, no polished UI; that polish is what the paid tools charge for.
+- No speaker diarization. `dikte.py` needs root on Linux (keyboard library); not on Windows.
 
 ## Do whatever you want
 
