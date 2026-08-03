@@ -41,6 +41,15 @@ Press F8, speak, press F8 again; the text is typed right where your cursor is:
 python dikte.py
 ```
 
+Prefer the Wispr Flow-style hold-to-talk? Hold the key, speak, release, text appears:
+
+```bash
+python dikte.py --basili
+```
+
+More options: `--tus f9` (change the hotkey) · `--yazarak` (types character by character instead
+of pasting; never touches the clipboard) · `--panoya` (clipboard-only).
+
 Prefer staying in the terminal? Simple mic mode (Enter to start/stop, text to screen + clipboard):
 
 ```bash

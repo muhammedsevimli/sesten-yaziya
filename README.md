@@ -41,6 +41,15 @@ F8'e bas, konuş, tekrar F8; metin imlecin olduğu yere kendiliğinden yazılır
 python dikte.py
 ```
 
+Wispr Flow'daki gibi basılı-tut akışı istersen: tuşu basılı tut, konuş, bırak, metin yazılsın:
+
+```bash
+python dikte.py --basili
+```
+
+Diğer seçenekler: `--tus f9` (kısayolu değiştir) · `--yazarak` (yapıştırmak yerine karakter
+karakter yazar, panoya hiç dokunmaz) · `--panoya` (yalnız panoya kopyalar).
+
 Terminalde kalmak istersen basit mikrofon modu da var (Enter: başlat/durdur, metin ekrana + panoya):
 
 ```bash

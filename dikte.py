@@ -4,7 +4,9 @@ Windows, macOS ve Linux'ta çalışır.
 
 Kullanım:
     python dikte.py                (F8: kaydı başlat/durdur · Esc: çık)
+    python dikte.py --basili       (F8'i BASILI TUT, konuş, bırak; Wispr Flow akışı)
     python dikte.py --tus f9       (kısayolu değiştir)
+    python dikte.py --yazarak      (yapıştırma yerine karakter karakter yazar, panoya dokunmaz)
     python dikte.py --panoya       (imlece yazma, yalnız panoya kopyala)
     python dikte.py --model medium
 
@@ -33,9 +35,10 @@ MAC = sys.platform == "darwin"
 
 
 class Dikte:
-    def __init__(self, model, panoya_modu: bool):
+    def __init__(self, model, panoya_modu: bool, yazarak: bool = False):
         self.model = model
         self.panoya_modu = panoya_modu
+        self.yazarak = yazarak
         self.kayitta = False
         self.kuyruk: "queue.Queue[np.ndarray]" = queue.Queue()
         self.akis = None
@@ -95,6 +98,13 @@ class Dikte:
             print(f"(panoya kopyalandı, {kisayol} ile yapıştır)\n")
             return
 
+        if self.yazarak:
+            # whisper-writer/foges yöntemi: karakter karakter yazar, panoya hiç dokunmaz.
+            # Bazı uygulamalar özel karakterlerde huysuzdur; sorun görürsen varsayılan
+            # (yapıştırma) yöntemine dön.
+            Controller().type(metin + " ")
+            return
+
         eski = None
         try:
             eski = pyperclip.paste()
@@ -123,10 +133,25 @@ def kisayol_bicimle(tus: str) -> str:
     return tus if len(tus) == 1 else f"<{tus}>"
 
 
+def tus_cozumle(tus: str):
+    """'f8' → Key.f8 · 'j' → KeyCode('j') (basılı-tut modu için)."""
+    from pynput.keyboard import Key, KeyCode
+
+    tus = tus.strip().lower()
+    if len(tus) == 1:
+        return KeyCode.from_char(tus)
+    try:
+        return getattr(Key, tus)
+    except AttributeError:
+        raise SystemExit(f"bilinmeyen tuş: {tus} (örnek: f8, f9, pause)")
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Her uygulamada Türkçe dikte (bas-konuş-yapışsın).")
     p.add_argument("--model", default="small", help="whisper modeli: small (varsayılan) / medium")
     p.add_argument("--tus", default="f8", help="kayıt kısayolu (varsayılan: f8)")
+    p.add_argument("--basili", action="store_true", help="tuşu basılı tut, konuş, bırak (Wispr akışı)")
+    p.add_argument("--yazarak", action="store_true", help="yapıştırma yerine karakter karakter yaz")
     p.add_argument("--panoya", action="store_true", help="imlece yazma, yalnız panoya kopyala")
     args = p.parse_args()
 
@@ -136,14 +161,34 @@ def main() -> None:
     print(f"model yükleniyor: {args.model} (ilk çalıştırmada indirilir)")
     model = WhisperModel(args.model, device="cpu", compute_type="int8")
 
-    d = Dikte(model, args.panoya)
-    dinleyici = pk.GlobalHotKeys({
-        kisayol_bicimle(args.tus): d.baslat_durdur,
-        "<esc>": lambda: dinleyici.stop(),
-    })
-    print(f"hazır. istediğin uygulamaya geç → {args.tus.upper()}: kayıt başlat/durdur · Esc: çık\n")
-    dinleyici.start()
-    dinleyici.join()
+    d = Dikte(model, args.panoya, args.yazarak)
+
+    if args.basili:
+        # basılı-tut modu: tuş inince kayıt başlar (oto-tekrar kayitta bayrağıyla süzülür),
+        # tuş kalkınca durur ve çevirir. Esc çıkar.
+        hedef = tus_cozumle(args.tus)
+
+        def inince(k):
+            if k == hedef and not d.kayitta:
+                d.baslat_durdur()
+
+        def kalkinca(k):
+            if k == hedef and d.kayitta:
+                d.baslat_durdur()
+            if k == pk.Key.esc:
+                return False
+
+        print(f"hazır. istediğin uygulamaya geç → {args.tus.upper()} BASILI TUT, konuş, bırak · Esc: çık\n")
+        with pk.Listener(on_press=inince, on_release=kalkinca) as dinleyici:
+            dinleyici.join()
+    else:
+        dinleyici = pk.GlobalHotKeys({
+            kisayol_bicimle(args.tus): d.baslat_durdur,
+            "<esc>": lambda: dinleyici.stop(),
+        })
+        print(f"hazır. istediğin uygulamaya geç → {args.tus.upper()}: kayıt başlat/durdur · Esc: çık\n")
+        dinleyici.start()
+        dinleyici.join()
     print("çıkıldı.")
 
 
