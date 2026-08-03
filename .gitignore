@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+cikti/
+kayitlar/
+.venv/
+venv/
+.env
+.env.*
