@@ -1,5 +1,7 @@
 """sesten-yaziya · dikte modu: HER uygulamada bas-konuş, metin imlecin olduğu yere yazılsın.
 
+Windows, macOS ve Linux'ta çalışır.
+
 Kullanım:
     python dikte.py                (F8: kaydı başlat/durdur · Esc: çık)
     python dikte.py --tus f9       (kısayolu değiştir)
@@ -10,7 +12,11 @@ Akış: WhatsApp, mail, doküman, neredeysen orada kal. F8'e bas, konuş, tekrar
 Metin çevrilir ve imlecin olduğu alana kendiliğinden yapışır. Her şey bilgisayarında
 çalışır, ses hiçbir yere gitmez.
 
-Not: Windows'ta ek izin gerekmez. Linux'ta `keyboard` kütüphanesi root ister.
+macOS notu: ilk çalıştırmada sistem iki izin ister, ikisi de bir kere verilir:
+mikrofon izni ve Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik (gerekirse
+bir de Giriş İzleme) altında Terminal'i işaretlemek. Root/sudo GEREKMEZ.
+Linux notu: X11'de çalışır; Wayland masaüstlerinde global kısayol kısıtlı olabilir,
+o durumda --panoya modunu kullan.
 """
 
 import argparse
@@ -23,6 +29,7 @@ import numpy as np
 sys.stdout.reconfigure(encoding="utf-8")
 
 ORNEKLEME = 16000
+MAC = sys.platform == "darwin"
 
 
 class Dikte:
@@ -76,14 +83,16 @@ class Dikte:
         self._yaz(metin)
 
     def _yaz(self, metin: str):
-        """Metni imlecin olduğu alana bırakır: pano + Ctrl+V (Türkçe için en güvenilir yol),
-        ardından eski pano içeriği geri konur. --panoya modunda yalnız kopyalar."""
-        import keyboard
+        """Metni imlecin olduğu alana bırakır: pano + yapıştır kısayolu (Türkçe için en
+        güvenilir yol; Mac'te Cmd+V, diğerlerinde Ctrl+V). Eski pano içeriği geri konur.
+        --panoya modunda yalnız kopyalar."""
         import pyperclip
+        from pynput.keyboard import Controller, Key
 
         if self.panoya_modu:
             pyperclip.copy(metin)
-            print("(panoya kopyalandı, Ctrl+V ile yapıştır)\n")
+            kisayol = "Cmd+V" if MAC else "Ctrl+V"
+            print(f"(panoya kopyalandı, {kisayol} ile yapıştır)\n")
             return
 
         eski = None
@@ -92,14 +101,26 @@ class Dikte:
         except Exception:
             pass
         pyperclip.copy(metin)
-        time.sleep(0.15)  # pano oturmadan V basılırsa eski içerik yapışıyor
-        keyboard.send("ctrl+v")
+        time.sleep(0.15)  # pano oturmadan yapıştırılırsa eski içerik gidiyor
+
+        klavye = Controller()
+        duzenleyici = Key.cmd if MAC else Key.ctrl
+        with klavye.pressed(duzenleyici):
+            klavye.press("v")
+            klavye.release("v")
+
         if eski is not None:
             time.sleep(0.35)
             try:
                 pyperclip.copy(eski)
             except Exception:
                 pass
+
+
+def kisayol_bicimle(tus: str) -> str:
+    """'f8' → '<f8>' · tek karakter ('j') olduğu gibi kalır."""
+    tus = tus.strip().lower()
+    return tus if len(tus) == 1 else f"<{tus}>"
 
 
 def main() -> None:
@@ -109,16 +130,20 @@ def main() -> None:
     p.add_argument("--panoya", action="store_true", help="imlece yazma, yalnız panoya kopyala")
     args = p.parse_args()
 
-    import keyboard
+    from pynput import keyboard as pk
     from faster_whisper import WhisperModel
 
     print(f"model yükleniyor: {args.model} (ilk çalıştırmada indirilir)")
     model = WhisperModel(args.model, device="cpu", compute_type="int8")
 
     d = Dikte(model, args.panoya)
-    keyboard.add_hotkey(args.tus, d.baslat_durdur)
+    dinleyici = pk.GlobalHotKeys({
+        kisayol_bicimle(args.tus): d.baslat_durdur,
+        "<esc>": lambda: dinleyici.stop(),
+    })
     print(f"hazır. istediğin uygulamaya geç → {args.tus.upper()}: kayıt başlat/durdur · Esc: çık\n")
-    keyboard.wait("esc")
+    dinleyici.start()
+    dinleyici.join()
     print("çıkıldı.")
 
 

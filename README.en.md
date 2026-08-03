@@ -16,8 +16,8 @@ cd sesten-yaziya
 pip install -r requirements.txt
 ```
 
-Python 3.10+, no GPU required. The model downloads once on first run (small ≈ 500 MB), fully
-offline after that.
+Works on Windows, macOS and Linux. Python 3.10+, no GPU required. The model downloads once on
+first run (small ≈ 500 MB), fully offline after that.
 
 ## Use
 
@@ -64,7 +64,11 @@ Written to `cikti/`:
 - Punctuation is decent, not perfect.
 - Dictation types after you stop recording (transcription takes a moment), not while you speak.
   No streaming, no tray icon, no polished UI; that polish is what the paid tools charge for.
-- No speaker diarization. `dikte.py` needs root on Linux (keyboard library); not on Windows.
+- No speaker diarization.
+- `dikte.py` permissions: nothing needed on Windows. On macOS the first run asks for microphone
+  access + ticking Terminal under System Settings → Privacy & Security → Accessibility (once,
+  no sudo; pasting uses Cmd+V automatically). On Linux it works under X11; if your Wayland
+  desktop restricts global hotkeys, use `--panoya` (clipboard-only) mode.
 
 ## Do whatever you want
 

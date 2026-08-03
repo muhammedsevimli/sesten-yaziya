@@ -16,8 +16,8 @@ cd sesten-yaziya
 pip install -r requirements.txt
 ```
 
-Python 3.10+ yeterli, GPU şart değil. Model ilk çalıştırmada bir kere iner (small ≈ 500 MB),
-sonrası tamamen çevrimdışı.
+Windows, macOS ve Linux'ta çalışır. Python 3.10+ yeterli, GPU şart değil. Model ilk çalıştırmada
+bir kere iner (small ≈ 500 MB), sonrası tamamen çevrimdışı.
 
 ## Kullanım
 
@@ -64,7 +64,11 @@ python mikrofon.py
 - Noktalama mükemmel değil; uzun metinlerde elden bir geçirmek gerekebilir.
 - Dikte modu konuşurken değil, kaydı durdurunca yazar (çeviri kısa bir an sürer). Anlık akış,
   tepsi simgesi, cilalı arayüz yok; paralı araçların parası o cilaya gidiyor, iş burada.
-- Konuşmacı ayrımı yok. `dikte.py` Linux'ta yönetici izni ister (keyboard kütüphanesi), Windows'ta gerekmez.
+- Konuşmacı ayrımı yok.
+- `dikte.py` izinleri: Windows'ta hiçbir şey gerekmez. macOS ilk çalıştırmada mikrofon izni +
+  Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik'te Terminal'i işaretlemeni ister
+  (bir kere, sudo gerekmez; Mac'te yapıştırma otomatik Cmd+V ile yapılır). Linux X11'de çalışır,
+  Wayland'da global kısayol kısıtlıysa `--panoya` modunu kullan.
 - Beğenmediysen ya da kendine göre kurmak istersen bu sistemin prompt'u da açık:
   [muhammedsevimli.com/saas-promptlari/wispr-flow](https://muhammedsevimli.com/saas-promptlari/wispr-flow)
 
